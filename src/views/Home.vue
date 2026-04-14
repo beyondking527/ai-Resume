@@ -149,6 +149,7 @@ const toggleChat = () => {
     font-weight: 700;
     background: linear-gradient(45deg, #409eff, #67c23a);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     margin: 0;
   }

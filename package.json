@@ -7,7 +7,7 @@
   "dev": "vite",
   "build": "vite build",
   "preview": "vite preview",
-  "deploy": "gh-pages -d dist -r https://gitee.com/MA EX/ai-Resume.git -b gh-pages"
+  "deploy": "gh-pages -d dist -r https://gitee.com/ma-ex/ai-Resume.git -b gh-pages"
 },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
