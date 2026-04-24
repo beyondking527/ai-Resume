@@ -55,14 +55,13 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted } from 'vue'
+import { ref, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import MarkdownIt from 'markdown-it'
 import hljs from 'highlight.js'
-import 'highlight.js/styles/atom-one-dark.css' // 引入代码高亮样式
+import 'highlight.js/styles/atom-one-dark.css'
 import aiAvatar from '@/assets/头像.jpg'
 
-// 初始化 markdown-it，配置代码高亮
 const md = new MarkdownIt({
   html: true,
   linkify: true,
@@ -85,14 +84,14 @@ const messages = ref([
 const inputMessage = ref('')
 const isLoading = ref(false)
 const messagesRef = ref(null)
+const lastRequestTime = ref(0)
+const MIN_REQUEST_INTERVAL = 2000
 
-// 渲染内容
 const renderContent = (content) => {
   if (!content) return ''
   return md.render(content)
 }
 
-// 滚动到底部
 const scrollToBottom = async () => {
   await nextTick()
   if (messagesRef.value) {
@@ -100,9 +99,18 @@ const scrollToBottom = async () => {
   }
 }
 
-// 发送消息
+const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
 const sendMessage = async () => {
   if (!inputMessage.value.trim() || isLoading.value) return
+
+  const now = Date.now()
+  const timeSinceLastRequest = now - lastRequestTime.value
+  
+  if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
+    ElMessage.warning('请稍后再试，避免频繁请求')
+    return
+  }
 
   const userMsg = inputMessage.value.trim()
   messages.value.push({ role: 'user', content: userMsg })
@@ -110,19 +118,22 @@ const sendMessage = async () => {
   await scrollToBottom()
 
   isLoading.value = true
+  lastRequestTime.value = Date.now()
 
-  // 添加一个空的 AI 回复占位
   messages.value.push({ role: 'assistant', content: '' })
   const assistantMsgIndex = messages.value.length - 1
 
-  try {
-    const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY
-    if (!apiKey) throw new Error('请配置 API Key')
+  let retryCount = 0
+  const maxRetries = 2
 
-    const apiUrl = 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
+  while (retryCount <= maxRetries) {
+    try {
+      const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY
+      if (!apiKey) throw new Error('请配置 API Key')
 
-    // 系统提示词：谢智聪的个人简历与角色设定
-    const systemPrompt = `
+      const apiUrl = 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
+
+      const systemPrompt = `
       # Role: 谢智聪的 AI 招聘助理
       你是由 Java 后端开发工程师 **谢智聪** 开发的智能助手。你的目标是专业、自信地展示谢智聪的能力。
 
@@ -130,7 +141,7 @@ const sendMessage = async () => {
       - **姓名**: 谢智聪
       - **岗位**: Java后端开发 (2年经验)
       - **坐标**: 深圳市龙岗区 (3天内可到岗)
-      - **期望薪资**: 6k~8k
+      - **期望薪资**: 8k~10k
       - **联系方式**: 13353014793 / 2724785987@qq.com
 
       # Tech Stack (核心技术栈)
@@ -143,67 +154,86 @@ const sendMessage = async () => {
 
       # Guidelines (回答准则)
       1. **专业自信**: 回答技术问题时，体现对底层原理的理解。
-      2. **突出优势**: 强调“全栈视野”、“AI 融合开发能力”以及“高可用接口设计经验”。
+      2. **突出优势**: 强调"全栈视野"、"AI 融合开发能力"以及"高可用接口设计经验"。
       3. **简洁明了**: 避免冗长，直接给出结论。
-      4. **引导联系**: 如果用户感兴趣，主动提供电话或邮箱，并提醒“3天内即可到岗”。
+      4. **引导联系**: 如果用户感兴趣，主动提供电话或邮箱，并提醒"3天内即可到岗"。
       5. **语气风格**: 谦逊但充满干劲。
     `
 
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'glm-4.7-flash',
-        stream: true,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...messages.value.filter(m => m.role !== 'assistant' || m.content !== '')
-        ]
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'glm-4.7-flash',
+          stream: true,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            ...messages.value.filter(m => m.role !== 'assistant' || m.content !== '')
+          ]
+        })
       })
-    })
 
-    if (!response.ok) throw new Error('请求失败')
+      if (response.status === 429) {
+        retryCount++
+        if (retryCount <= maxRetries) {
+          const waitTime = Math.pow(2, retryCount) * 1000
+          ElMessage.warning(`请求过于频繁，${waitTime / 1000}秒后自动重试...`)
+          await wait(waitTime)
+          continue
+        } else {
+          throw new Error('API 调用频率超限，请稍后再试')
+        }
+      }
 
-    const reader = response.body.getReader()
-    const decoder = new TextDecoder()
-    let buffer = ''
+      if (!response.ok) throw new Error(`请求失败: ${response.status}`)
 
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
 
-      const chunk = decoder.decode(value, { stream: true })
-      buffer += chunk
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
 
-      const lines = buffer.split('\n')
-      buffer = lines.pop() || ''
+        const chunk = decoder.decode(value, { stream: true })
+        buffer += chunk
 
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const jsonStr = line.slice(6)
-          if (jsonStr === '[DONE]') continue
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
 
-          try {
-            const data = JSON.parse(jsonStr)
-            const delta = data.choices[0]?.delta?.content
-            if (delta) {
-              messages.value[assistantMsgIndex].content += delta
-              await scrollToBottom()
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const jsonStr = line.slice(6)
+            if (jsonStr === '[DONE]') continue
+
+            try {
+              const data = JSON.parse(jsonStr)
+              const delta = data.choices[0]?.delta?.content
+              if (delta) {
+                messages.value[assistantMsgIndex].content += delta
+                await scrollToBottom()
+              }
+            } catch (e) {
+              buffer = line + '\n' + buffer
             }
-          } catch (e) {
-            buffer = line + '\n' + buffer
           }
         }
       }
+      
+      break
+    } catch (error) {
+      if (retryCount < maxRetries && error.message.includes('429')) {
+        continue
+      }
+      ElMessage.error(error.message || '发送失败')
+      messages.value.splice(assistantMsgIndex, 1)
+      break
+    } finally {
+      isLoading.value = false
     }
-  } catch (error) {
-    ElMessage.error(error.message || '发送失败')
-    messages.value.pop()
-  } finally {
-    isLoading.value = false
   }
 }
 </script>
@@ -256,7 +286,6 @@ const sendMessage = async () => {
         border: 1px solid #ebeef5;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 
-        /* Markdown 样式美化 */
         :deep(strong) { font-weight: 700; color: #2c3e50; }
         :deep(ul), :deep(ol) { padding-left: 20px; margin: 8px 0; }
         :deep(li) { margin-bottom: 4px; line-height: 1.6; }
@@ -299,7 +328,6 @@ const sendMessage = async () => {
     }
   }
 
-  /* 打字机动画 */
   .typing-indicator {
     background: #fff;
     padding: 12px 18px;
