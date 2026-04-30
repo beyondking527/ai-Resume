@@ -83,12 +83,14 @@ import ProjectCard from '@/components/ProjectCard.vue'
 import ChatAssistant from '@/components/ChatAssistant.vue'
 import userAvatar from '@/assets/真人头像.jpg'
 
-import shopImg1 from '@/assets/imagesProject/shopadmin/商城后台管理-权限与角色.png'
-import shopImg2 from '@/assets/imagesProject/shopadmin/商城后台管理-商品分类管理.png'
-import shopImg3 from '@/assets/imagesProject/shopadmin/商城后台管理-商品管理.png'
-import shopImg4 from '@/assets/imagesProject/shopadmin/商城后台管理-图库模块.png'
-import shopImg5 from '@/assets/imagesProject/shopadmin/商城后台管理-主控台.png'
-import shopImg6 from '@/assets/imagesProject/shopadmin/商品后台管理-订单与物流.png'
+// 批量导入 shopadmin 项目图片
+const shopImages = import.meta.glob('@/assets/imagesProject/shopadmin/*.png', { eager: true })
+const shopImgList = Object.values(shopImages).map(module => module.default)
+
+// 批量导入其他项目图片
+const vendingImg1 = new URL('@/assets/imagesProject/帝可得自动贩卖机管理.png', import.meta.url).href
+const communityImg1 = new URL('@/assets/imagesProject/社区交友app.png', import.meta.url).href
+const supermarketImg1 = new URL('@/assets/imagesProject/超市订单管理.png', import.meta.url).href
 
 const isChatVisible = ref(false)
 
@@ -101,7 +103,7 @@ const projects = ref([
     title: '商城管理后台',
     category: '电商管理平台',
     tagType: 'primary',
-    images: [shopImg1, shopImg2, shopImg3, shopImg4, shopImg5, shopImg6], // 多张图片数组
+    images: shopImgList, // 使用批量导入的图片数组
     description: '基于 Spring Boot 2.7 + Vue3 开发的现代化商城管理后台系统，采用前后端分离架构。系统实现了完整的 RBAC 权限管理、商品 SKU/SPU 多维度管理、订单全生命周期管理、二级分销体系等核心业务模块。支持 Docker 容器化部署，集成 Redis 缓存、JWT 认证、阿里云 OSS 等技术，提供完善的监控告警和 CI/CD 自动化部署方案。',
     technologies: ['Spring Boot 2.7', 'MyBatis-Plus 3.5', 'MySQL 8.0', 'Redis', 'Vue 3', 'Element Plus', 'JWT', 'Docker', 'Nginx'],
     features: [
@@ -119,7 +121,7 @@ const projects = ref([
     title: '帝可得自动贩卖机管理平台',
     category: 'IoT 物联网',
     tagType: 'success',
-    images: [vendingImg1, vendingImg2], 
+    images: [vendingImg1], 
     description: '面向智能零售场景的 IoT 设备管理平台，通过 MQTT 协议实现与数千台自动贩卖机的实时通信。平台提供设备监控、库存预警、远程运维等智能化功能，助力新零售业务数字化转型。',
     technologies: ['SpringCloud', 'Nacos', 'OpenFeign', 'MQTT', '华为云 IoT', 'RabbitMQ', 'Docker'],
     features: [
@@ -133,7 +135,7 @@ const projects = ref([
     title: '社区交友 App',
     category: '社交应用',
     tagType: 'warning',
-    images: [communityImg1, communityImg2], 
+    images: [communityImg1], 
     description: '基于地理位置的社区社交平台，为用户提供邻里互动、兴趣小组、活动发布等功能。采用微服务架构设计，支持高并发用户访问，注重用户隐私保护与内容安全审核。',
     technologies: ['SpringBoot', 'MySQL', 'Redis', '阿里云 OSS', 'WebSocket', 'Vue3', 'UniApp'],
     features: [
@@ -147,7 +149,7 @@ const projects = ref([
     title: '超市订单管理系统',
     category: '企业管理',
     tagType: 'danger',
-    images: [supermarketImg1, supermarketImg2], 
+    images: [supermarketImg1], 
     description: '面向连锁超市的智能化订单管理平台，涵盖采购订单、销售订单、库存调拨等全流程业务。系统采用分布式架构设计，支持多门店数据同步与实时库存管理，有效提升供应链效率。',
     technologies: ['SpringCloud', 'MyBatis', 'MySQL', 'Redis', 'RabbitMQ', 'Linux', 'Nginx'],
     features: [
