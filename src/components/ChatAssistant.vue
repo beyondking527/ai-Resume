@@ -128,10 +128,12 @@ const sendMessage = async () => {
 
   while (retryCount <= maxRetries) {
     try {
-      const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY
+      // DeepSeek API Key
+      const apiKey = 'sk-c89a71a6ccbc472aa0391e3bb5fe5426'
       if (!apiKey) throw new Error('请配置 API Key')
 
-      const apiUrl = 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
+      // DeepSeek API 端点
+      const apiUrl = 'https://api.deepseek.com/v1/chat/completions'
 
       const systemPrompt = `
       # Role: 谢智聪的 AI 招聘助理
@@ -167,7 +169,7 @@ const sendMessage = async () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'glm-4.7-flash',
+          model: 'deepseek-chat',
           stream: true,
           messages: [
             { role: 'system', content: systemPrompt },
