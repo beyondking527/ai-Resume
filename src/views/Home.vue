@@ -87,10 +87,15 @@ import userAvatar from '@/assets/真人头像.jpg'
 const shopImages = import.meta.glob('@/assets/imagesProject/shopadmin/*.png', { eager: true })
 const shopImgList = Object.values(shopImages).map(module => module.default)
 
+// 批量导入亲喝水售货机项目图片
+const vendingImages = import.meta.glob('@/assets/imagesProject/vending/*.png', { eager: true })
+const vendingImgList = Object.values(vendingImages).map(module => module.default)
+
+const supermarketImages = import.meta.glob('@/assets/imagesProject/supermarket/*.png', { eager: true })
+const supermarketImgList = Object.values(supermarketImages).map(module => module.default)
+
 // 批量导入其他项目图片
-const vendingImg1 = new URL('@/assets/imagesProject/帝可得自动贩卖机管理.png', import.meta.url).href
 const communityImg1 = new URL('@/assets/imagesProject/社区交友app.png', import.meta.url).href
-const supermarketImg1 = new URL('@/assets/imagesProject/超市订单管理.png', import.meta.url).href
 
 const isChatVisible = ref(false)
 
@@ -103,7 +108,7 @@ const projects = ref([
     title: '商城管理后台',
     category: '电商管理平台',
     tagType: 'primary',
-    images: shopImgList, // 使用批量导入的图片数组
+    images: shopImgList,
     description: '基于 Spring Boot 2.7 + Vue3 开发的现代化商城管理后台系统，采用前后端分离架构。系统实现了完整的 RBAC 权限管理、商品 SKU/SPU 多维度管理、订单全生命周期管理、二级分销体系等核心业务模块。支持 Docker 容器化部署，集成 Redis 缓存、JWT 认证、阿里云 OSS 等技术，提供完善的监控告警和 CI/CD 自动化部署方案。',
     technologies: ['Spring Boot 2.7', 'MyBatis-Plus 3.5', 'MySQL 8.0', 'Redis', 'Vue 3', 'Element Plus', 'JWT', 'Docker', 'Nginx'],
     features: [
@@ -118,17 +123,22 @@ const projects = ref([
     ]
   },
   {
-    title: '帝可得自动贩卖机管理平台',
+    title: '亲喝水多端智能售货机管理系统',
     category: 'IoT 物联网',
     tagType: 'success',
-    images: [vendingImg1], 
-    description: '面向智能零售场景的 IoT 设备管理平台，通过 MQTT 协议实现与数千台自动贩卖机的实时通信。平台提供设备监控、库存预警、远程运维等智能化功能，助力新零售业务数字化转型。',
-    technologies: ['SpringCloud', 'Nacos', 'OpenFeign', 'MQTT', '华为云 IoT', 'RabbitMQ', 'Docker'],
+    images: vendingImgList,
+    description: '面向智能零售场景的多端协同物联网管理平台，采用Spring Boot + Vue前后端分离架构。系统包含四大端：平台管理后台（PC）、运维客户端（移动端）、C端用户（售货机小程序）、合作商后台，支持自营、加盟、点位主分成等多种商业模式。提供设备监控、工单管理、在线支付、库存预警等全方位功能，助力传统售货机数字化转型。',
+    technologies: ['Spring Boot', 'Vue.js', '微信小程序', 'Redis', 'MyBatis', 'MyBatis-Plus', 'Druid', 'Element UI', '微信支付', '支付宝支付', '阿里云OSS', '短信服务'],
     features: [
-      '基于 MQTT 协议实现设备实时状态上报与指令下发',
-      '集成华为云 IoT 平台，支持海量设备接入与管理',
-      '智能库存预警系统，自动生成补货建议',
-      '可视化设备监控大屏，实时展示运营数据'
+      '多端协同：平台管理后台、运维移动端、售货机小程序、合作商后台四大端完整覆盖',
+      '设备全生命周期管理：设备录入、货道配置、状态监控、远程运维',
+      '智能工单系统：补货、维修、维护工单自动生成与智能派发，移动端接单处理',
+      'C端购物体验：售货机小程序扫码购物，支持微信支付、支付宝支付',
+      '多商业模式支持：自营、加盟、点位主分成模式灵活切换',
+      '点位与区域管理：基于地理位置的设备点位和运营区域划分',
+      '商品与SKU管理：多级商品分类、库存预警、补货策略配置',
+      '文件与消息服务：阿里云OSS图片存储、短信验证码登录',
+      '数据统计分析：运营数据可视化、销售分析、设备收益统计、员工绩效排名'
     ]
   },
   {
@@ -147,16 +157,20 @@ const projects = ref([
   },
   {
     title: '超市订单管理系统',
-    category: '企业管理',
-    tagType: 'danger',
-    images: [supermarketImg1], 
-    description: '面向连锁超市的智能化订单管理平台，涵盖采购订单、销售订单、库存调拨等全流程业务。系统采用分布式架构设计，支持多门店数据同步与实时库存管理，有效提升供应链效率。',
-    technologies: ['SpringCloud', 'MyBatis', 'MySQL', 'Redis', 'RabbitMQ', 'Linux', 'Nginx'],
+    category: '企业管理系统',
+    tagType: 'primary',
+    images: supermarketImgList, 
+    description: '基于 Spring Boot 3 + Vue3 的前后端分离企业级管理系统，聚焦供应链核心业务流程。采用 RBAC 权限模型实现细粒度访问控制，集成 JWT 无状态认证、Redis 缓存优化、AOP 统一日志等技术栈，独立完成从数据库设计到接口开发的全流程实现。系统支持用户管理、供应商管理、账单管理等模块，具备完整的 CRUD 操作、分页查询、数据校验及异常处理机制。',
+    technologies: ['Spring Boot 3.1','MyBatis','MySQL 8.0','Redis','JWT','Vue 3','Element Plus','Vite'],
     features: [
-      '多租户架构设计，支持连锁门店独立数据隔离',
-      '基于 RabbitMQ 的异步订单处理，峰值吞吐量提升 3 倍',
-      '智能库存预警与自动补货建议，降低缺货率 40%',
-      '多维度数据统计报表，支持 Excel/PDF 格式导出'
+      '设计并实现 RBAC 权限模型，支持菜单级与按钮级动态权限控制，通过自定义注解 + AOP 实现权限拦截',
+      '基于 JWT Token 实现无状态认证机制，结合拦截器完成登录校验与 Token 刷新，保障会话安全',
+      '引入 Redis 缓存验证码与热点数据，降低数据库压力，验证码有效期 5 分钟且单次有效',
+      '使用 PageHelper 分页插件实现高效分页查询，支持多条件动态筛选与排序，优化大数据量场景性能',
+      '采用 BCrypt 强哈希算法加密用户密码，防止明文存储风险，提升数据安全性',
+      '通过 AOP 切面编程实现统一操作日志记录与声明式事务管理，确保业务数据一致性',
+      '遵循 RESTful API 设计规范，统一响应格式与异常处理，提供清晰的接口文档',
+      '前端采用 Vue3 Composition API + Element Plus 组件库，实现响应式布局与表单验证'
     ]
   }
 ])
@@ -481,11 +495,32 @@ const projects = ref([
       height: 200px;
     }
   }
+  
+  .hero-section {
+    padding: 40px 0;
+  }
+  
+  .site-main {
+    padding: 20px 15px;
+  }
+  
+  .works-section {
+    max-width: 100%;
+  }
+  
+  .section-title {
+    margin-bottom: 30px;
+    
+    h3 {
+      font-size: 26px;
+    }
+  }
 
   .chat-popup {
     width: 90%;
     right: 5%;
     bottom: 100px;
+    height: 60vh;
   }
 
   .ai-float-container {

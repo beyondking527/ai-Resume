@@ -225,6 +225,7 @@ defineExpose({
   height: 100%;
   object-fit: v-bind(imageFit);
   transition: transform 0.3s ease;
+  cursor: pointer;
 }
 
 .image-wrapper:hover .carousel-image {
@@ -364,5 +365,24 @@ defineExpose({
 :deep(.el-image__inner) {
   max-width: 100%;
   max-height: 100%;
+}
+
+:deep(.el-image-viewer__wrapper) {
+  z-index: 9999;
+}
+
+:deep(.el-image-viewer__canvas) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+}
+
+:deep(.el-image-viewer__img) {
+  max-width: 95vw;
+  max-height: 95vh;
+  object-fit: contain;
+  margin: auto;
 }
 </style>

@@ -233,8 +233,32 @@ const handleImageChange = (index, image) => {
   }
 
   .project-carousel {
+    margin-bottom: 20px;
+    
     :deep(.image-carousel) {
-      height: 250px !important;
+      height: 220px !important;
+      border-radius: 12px;
+    }
+    
+    :deep(.el-carousel__container) {
+      height: 220px !important;
+    }
+    
+    :deep(.el-carousel__item) {
+      height: 220px !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    :deep(.image-wrapper) {
+      height: 220px !important;
+    }
+    
+    :deep(.carousel-image) {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
   }
 
