@@ -17,11 +17,10 @@
             :alt="img.alt || `图片 ${index + 1}`"
             fit="contain"
             class="carousel-image"
-            :preview-src-list="getImageList()"
-            :initial-index="index"
             lazy
             @load="handleImageLoad(index)"
             @error="handleImageError(index)"
+            @click="openPreview(index)"
           >
             <template #error>
               <div class="image-error">
@@ -62,11 +61,46 @@
       {{ currentIndex + 1 }} / {{ images.length }}
     </div>
   </div>
+
+  <!-- 全屏图片预览遮罩层 -->
+  <transition name="preview-fade">
+    <div v-if="showPreview" class="image-preview-overlay" @click="closePreview">
+      <!-- 关闭按钮 -->
+      <div class="preview-close-btn" @click.stop="closePreview">
+        <el-icon :size="24"><Close /></el-icon>
+      </div>
+
+      <!-- 上一张按钮 -->
+      <div v-if="images.length > 1" class="preview-nav-btn preview-prev" @click.stop="prevImage">
+        <el-icon :size="32"><ArrowLeft /></el-icon>
+      </div>
+
+      <!-- 下一张按钮 -->
+      <div v-if="images.length > 1" class="preview-nav-btn preview-next" @click.stop="nextImage">
+        <el-icon :size="32"><ArrowRight /></el-icon>
+      </div>
+
+      <!-- 图片计数器 -->
+      <div v-if="images.length > 1" class="preview-counter">
+        {{ previewIndex + 1 }} / {{ images.length }}
+      </div>
+
+      <!-- 大图显示 -->
+      <div class="preview-image-wrapper" @click.stop>
+        <img 
+          :src="getImageUrl(previewIndex)" 
+          :alt="getImageAlt(previewIndex)"
+          class="preview-image"
+          @click.stop
+        />
+      </div>
+    </div>
+  </transition>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { Picture, Loading } from '@element-plus/icons-vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { Picture, Loading, Close, ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 
 const props = defineProps({
   // 图片列表，支持字符串数组或对象数组
@@ -156,6 +190,10 @@ const currentIndex = ref(0)
 const loadedImages = ref(new Set())
 const failedImages = ref(new Set())
 
+// 全屏预览相关状态
+const showPreview = ref(false)
+const previewIndex = ref(0)
+
 // 计算轮播高度
 const carouselHeight = computed(() => {
   if (props.maintainAspectRatio) {
@@ -164,9 +202,60 @@ const carouselHeight = computed(() => {
   return typeof props.height === 'number' ? `${props.height}px` : props.height
 })
 
-// 获取图片列表用于预览
-const getImageList = () => {
-  return props.images.map(img => img.url || img)
+// 获取图片 URL
+const getImageUrl = (index) => {
+  const img = props.images[index]
+  return img.url || img
+}
+
+// 获取图片 Alt 文本
+const getImageAlt = (index) => {
+  const img = props.images[index]
+  return img.alt || `图片 ${index + 1}`
+}
+
+// 打开全屏预览
+const openPreview = (index) => {
+  previewIndex.value = index
+  showPreview.value = true
+  // 禁止背景滚动
+  document.body.style.overflow = 'hidden'
+}
+
+// 关闭全屏预览
+const closePreview = () => {
+  showPreview.value = false
+  // 恢复背景滚动
+  document.body.style.overflow = ''
+}
+
+// 上一张图片
+const prevImage = () => {
+  if (props.images.length === 0) return
+  previewIndex.value = (previewIndex.value - 1 + props.images.length) % props.images.length
+}
+
+// 下一张图片
+const nextImage = () => {
+  if (props.images.length === 0) return
+  previewIndex.value = (previewIndex.value + 1) % props.images.length
+}
+
+// 键盘事件监听
+const handleKeyDown = (e) => {
+  if (!showPreview.value) return
+  
+  switch(e.key) {
+    case 'Escape':
+      closePreview()
+      break
+    case 'ArrowLeft':
+      prevImage()
+      break
+    case 'ArrowRight':
+      nextImage()
+      break
+  }
 }
 
 // 处理轮播切换
@@ -192,6 +281,18 @@ const handleImageError = (index) => {
   emit('error', index, props.images[index])
   console.warn(`图片加载失败:`, props.images[index])
 }
+
+// 组件挂载时监听键盘事件
+onMounted(() => {
+  document.addEventListener('keydown', handleKeyDown)
+})
+
+// 组件卸载时移除事件监听
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeyDown)
+  // 确保关闭预览时恢复滚动
+  document.body.style.overflow = ''
+})
 
 // 暴露方法供父组件调用
 defineExpose({
@@ -228,7 +329,7 @@ defineExpose({
   cursor: pointer;
 }
 
-.image-wrapper:hover .carousel-image {
+.carousel-image:hover {
   transform: scale(1.02);
 }
 
@@ -322,6 +423,130 @@ defineExpose({
   z-index: 10;
 }
 
+/* ============================================
+   全屏图片预览样式
+   ============================================ */
+
+/* 预览遮罩层 - 覆盖整个页面 */
+.image-preview-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.9);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+}
+
+/* 关闭按钮 */
+.preview-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.preview-close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+/* 左右导航按钮 */
+.preview-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50px;
+  height: 50px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.preview-nav-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.preview-prev {
+  left: 30px;
+}
+
+.preview-next {
+  right: 30px;
+}
+
+/* 图片计数器 */
+.preview-counter {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border-radius: 20px;
+  font-size: 14px;
+  z-index: 10;
+}
+
+/* 图片容器 */
+.preview-image-wrapper {
+  width: 95vw;
+  height: 95vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* 大图样式 */
+.preview-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* 预览动画 */
+.preview-fade-enter-active,
+.preview-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.preview-fade-enter-from,
+.preview-fade-leave-to {
+  opacity: 0;
+}
+
+.preview-fade-enter-from .preview-image,
+.preview-fade-leave-to .preview-image {
+  transform: scale(0.9);
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .image-caption {
@@ -348,6 +573,39 @@ defineExpose({
   .indicator-dot.active {
     width: 18px;
   }
+  
+  /* 手机端预览优化 */
+  .preview-close-btn {
+    top: 10px;
+    right: 10px;
+    width: 36px;
+    height: 36px;
+  }
+  
+  .preview-nav-btn {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .preview-prev {
+    left: 10px;
+  }
+  
+  .preview-next {
+    right: 10px;
+  }
+  
+  .preview-counter {
+    top: 10px;
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+  
+  .preview-image-wrapper {
+    width: 100vw;
+    height: 100vh;
+    padding: 10px;
+  }
 }
 
 /* Element Plus 轮播样式覆盖 */
@@ -365,24 +623,5 @@ defineExpose({
 :deep(.el-image__inner) {
   max-width: 100%;
   max-height: 100%;
-}
-
-:deep(.el-image-viewer__wrapper) {
-  z-index: 9999;
-}
-
-:deep(.el-image-viewer__canvas) {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100vw;
-  height: 100vh;
-}
-
-:deep(.el-image-viewer__img) {
-  max-width: 95vw;
-  max-height: 95vh;
-  object-fit: contain;
-  margin: auto;
 }
 </style>
