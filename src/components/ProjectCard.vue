@@ -9,13 +9,13 @@
       <ImageCarousel
         v-if="project.images && project.images.length > 0"
         :images="formattedImages"
-        height="350px"
+        height="500px"
         :interval="5000"
         :show-indicators="project.images.length > 1"
         :show-arrows="project.images.length > 1"
         indicator-position="outside"
         arrow-type="hover"
-        image-fit="contain"
+        image-fit="cover"
         background-color="#f5f7fa"
         @change="handleImageChange"
       />
@@ -129,6 +129,7 @@ const handleImageChange = (index, image) => {
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  min-height: 500px;
 
   :deep(.image-carousel) {
     border-radius: 16px;
@@ -136,6 +137,10 @@ const handleImageChange = (index, image) => {
 
   :deep(.el-carousel__indicators--outside) {
     bottom: -30px;
+  }
+
+  :deep(.el-carousel__container) {
+    height: 500px !important;
   }
 }
 

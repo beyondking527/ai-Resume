@@ -15,7 +15,7 @@
           <el-image
             :src="img.url || img"
             :alt="img.alt || `图片 ${index + 1}`"
-            fit="contain"
+            fit="cover"
             class="carousel-image"
             lazy
             @load="handleImageLoad(index)"
@@ -64,7 +64,7 @@
 
   <!-- 全屏图片预览遮罩层 -->
   <transition name="preview-fade">
-    <div v-if="showPreview" class="image-preview-overlay" @click="closePreview">
+    <div v-if="showPreview" class="image-preview-overlay" @click="closePreview" @wheel.prevent="handleWheel">
       <!-- 关闭按钮 -->
       <div class="preview-close-btn" @click.stop="closePreview">
         <el-icon :size="24"><Close /></el-icon>
@@ -85,13 +85,30 @@
         {{ previewIndex + 1 }} / {{ images.length }}
       </div>
 
+      <!-- 缩放控制按钮 -->
+      <div class="zoom-controls" @click.stop>
+        <el-button-group>
+          <el-button :icon="ZoomIn" @click="zoomIn" size="small" circle />
+          <el-button :icon="ZoomOut" @click="zoomOut" size="small" circle />
+          <el-button :icon="RefreshRight" @click="resetZoom" size="small" circle />
+        </el-button-group>
+      </div>
+
       <!-- 大图显示 -->
-      <div class="preview-image-wrapper" @click.stop>
+      <div class="preview-image-wrapper" @click.stop @wheel.prevent="handleWheel">
         <img 
           :src="getImageUrl(previewIndex)" 
           :alt="getImageAlt(previewIndex)"
           class="preview-image"
+          :style="imageTransform"
           @click.stop
+          @mousedown="startDrag"
+          @mousemove="handleDrag"
+          @mouseup="endDrag"
+          @mouseleave="endDrag"
+          @touchstart="handleTouchStart"
+          @touchmove="handleTouchMove"
+          @touchend="handleTouchEnd"
         />
       </div>
     </div>
@@ -100,7 +117,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { Picture, Loading, Close, ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
+import { Picture, Loading, Close, ArrowLeft, ArrowRight, ZoomIn, ZoomOut, RefreshRight } from '@element-plus/icons-vue'
 
 const props = defineProps({
   // 图片列表，支持字符串数组或对象数组
@@ -174,7 +191,7 @@ const props = defineProps({
   // 图片适应模式
   imageFit: {
     type: String,
-    default: 'contain',
+    default: 'cover',
     validator: (value) => ['fill', 'contain', 'cover', 'none', 'scale-down'].includes(value)
   },
   // 背景色
@@ -193,6 +210,17 @@ const failedImages = ref(new Set())
 // 全屏预览相关状态
 const showPreview = ref(false)
 const previewIndex = ref(0)
+const scale = ref(1)
+const translateX = ref(0)
+const translateY = ref(0)
+const isDragging = ref(false)
+const dragStartX = ref(0)
+const dragStartY = ref(0)
+const dragStartTranslateX = ref(0)
+const dragStartTranslateY = ref(0)
+
+// 触摸相关
+const lastTouchDistance = ref(0)
 
 // 计算轮播高度
 const carouselHeight = computed(() => {
@@ -201,6 +229,12 @@ const carouselHeight = computed(() => {
   }
   return typeof props.height === 'number' ? `${props.height}px` : props.height
 })
+
+// 计算图片变换样式
+const imageTransform = computed(() => ({
+  transform: `translate(${translateX.value}px, ${translateY.value}px) scale(${scale.value})`,
+  cursor: scale.value > 1 ? (isDragging.value ? 'grabbing' : 'grab') : 'zoom-in'
+}))
 
 // 获取图片 URL
 const getImageUrl = (index) => {
@@ -218,6 +252,7 @@ const getImageAlt = (index) => {
 const openPreview = (index) => {
   previewIndex.value = index
   showPreview.value = true
+  resetZoom()
   // 禁止背景滚动
   document.body.style.overflow = 'hidden'
 }
@@ -225,6 +260,7 @@ const openPreview = (index) => {
 // 关闭全屏预览
 const closePreview = () => {
   showPreview.value = false
+  resetZoom()
   // 恢复背景滚动
   document.body.style.overflow = ''
 }
@@ -233,12 +269,102 @@ const closePreview = () => {
 const prevImage = () => {
   if (props.images.length === 0) return
   previewIndex.value = (previewIndex.value - 1 + props.images.length) % props.images.length
+  resetZoom()
 }
 
 // 下一张图片
 const nextImage = () => {
   if (props.images.length === 0) return
   previewIndex.value = (previewIndex.value + 1) % props.images.length
+  resetZoom()
+}
+
+// 缩放控制
+const zoomIn = () => {
+  scale.value = Math.min(scale.value * 1.2, 5)
+}
+
+const zoomOut = () => {
+  scale.value = Math.max(scale.value / 1.2, 0.5)
+  if (scale.value === 1) {
+    translateX.value = 0
+    translateY.value = 0
+  }
+}
+
+const resetZoom = () => {
+  scale.value = 1
+  translateX.value = 0
+  translateY.value = 0
+}
+
+// 滚轮缩放
+const handleWheel = (e) => {
+  e.preventDefault()
+  if (e.deltaY < 0) {
+    zoomIn()
+  } else {
+    zoomOut()
+  }
+}
+
+// 鼠标拖拽
+const startDrag = (e) => {
+  if (scale.value <= 1) return
+  isDragging.value = true
+  dragStartX.value = e.clientX
+  dragStartY.value = e.clientY
+  dragStartTranslateX.value = translateX.value
+  dragStartTranslateY.value = translateY.value
+}
+
+const handleDrag = (e) => {
+  if (!isDragging.value) return
+  const deltaX = e.clientX - dragStartX.value
+  const deltaY = e.clientY - dragStartY.value
+  translateX.value = dragStartTranslateX.value + deltaX
+  translateY.value = dragStartTranslateY.value + deltaY
+}
+
+const endDrag = () => {
+  isDragging.value = false
+}
+
+// 触摸手势支持（双指缩放）
+const handleTouchStart = (e) => {
+  if (e.touches.length === 2) {
+    const touch1 = e.touches[0]
+    const touch2 = e.touches[1]
+    const distance = Math.hypot(
+      touch2.clientX - touch1.clientX,
+      touch2.clientY - touch1.clientY
+    )
+    lastTouchDistance.value = distance
+  }
+}
+
+const handleTouchMove = (e) => {
+  if (e.touches.length === 2) {
+    e.preventDefault()
+    const touch1 = e.touches[0]
+    const touch2 = e.touches[1]
+    const distance = Math.hypot(
+      touch2.clientX - touch1.clientX,
+      touch2.clientY - touch1.clientY
+    )
+    
+    const delta = distance - lastTouchDistance.value
+    if (delta > 0) {
+      zoomIn()
+    } else {
+      zoomOut()
+    }
+    lastTouchDistance.value = distance
+  }
+}
+
+const handleTouchEnd = () => {
+  lastTouchDistance.value = 0
 }
 
 // 键盘事件监听
@@ -254,6 +380,16 @@ const handleKeyDown = (e) => {
       break
     case 'ArrowRight':
       nextImage()
+      break
+    case '+':
+    case '=':
+      zoomIn()
+      break
+    case '-':
+      zoomOut()
+      break
+    case '0':
+      resetZoom()
       break
   }
 }
@@ -434,12 +570,13 @@ defineExpose({
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.9);
+  background-color: rgba(0, 0, 0, 0.95);
   z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: zoom-out;
+  user-select: none;
 }
 
 /* 关闭按钮 */
@@ -447,9 +584,9 @@ defineExpose({
   position: absolute;
   top: 20px;
   right: 20px;
-  width: 44px;
-  height: 44px;
-  background-color: rgba(255, 255, 255, 0.1);
+  width: 48px;
+  height: 48px;
+  background-color: rgba(255, 255, 255, 0.15);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -458,10 +595,11 @@ defineExpose({
   cursor: pointer;
   transition: all 0.3s ease;
   z-index: 10;
+  backdrop-filter: blur(10px);
 }
 
 .preview-close-btn:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.3);
   transform: scale(1.1);
 }
 
@@ -470,9 +608,9 @@ defineExpose({
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 50px;
-  height: 50px;
-  background-color: rgba(255, 255, 255, 0.1);
+  width: 56px;
+  height: 56px;
+  background-color: rgba(255, 255, 255, 0.15);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -481,10 +619,11 @@ defineExpose({
   cursor: pointer;
   transition: all 0.3s ease;
   z-index: 10;
+  backdrop-filter: blur(10px);
 }
 
 .preview-nav-btn:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.3);
   transform: translateY(-50%) scale(1.1);
 }
 
@@ -502,33 +641,57 @@ defineExpose({
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  padding: 8px 16px;
+  padding: 10px 20px;
   background-color: rgba(0, 0, 0, 0.6);
   color: white;
   border-radius: 20px;
   font-size: 14px;
   z-index: 10;
+  backdrop-filter: blur(10px);
+}
+
+/* 缩放控制按钮 */
+.zoom-controls {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+.zoom-controls :deep(.el-button) {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.zoom-controls :deep(.el-button:hover) {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 /* 图片容器 */
 .preview-image-wrapper {
-  width: 95vw;
-  height: 95vh;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  overflow: hidden;
+  position: relative;
 }
 
 /* 大图样式 */
 .preview-image {
-  max-width: 100%;
-  max-height: 100%;
+  max-width: 90vw;
+  max-height: 90vh;
   object-fit: contain;
   border-radius: 8px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
   user-select: none;
   -webkit-user-drag: none;
+  transition: transform 0.1s ease-out;
 }
 
 /* 预览动画 */
@@ -544,7 +707,7 @@ defineExpose({
 
 .preview-fade-enter-from .preview-image,
 .preview-fade-leave-to .preview-image {
-  transform: scale(0.9);
+  transform: scale(0.8);
 }
 
 /* 响应式设计 */
@@ -578,13 +741,13 @@ defineExpose({
   .preview-close-btn {
     top: 10px;
     right: 10px;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
   }
   
   .preview-nav-btn {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
   }
   
   .preview-prev {
@@ -598,13 +761,21 @@ defineExpose({
   .preview-counter {
     top: 10px;
     font-size: 12px;
-    padding: 6px 12px;
+    padding: 8px 16px;
   }
   
   .preview-image-wrapper {
     width: 100vw;
     height: 100vh;
-    padding: 10px;
+  }
+  
+  .preview-image {
+    max-width: 95vw;
+    max-height: 95vh;
+  }
+  
+  .zoom-controls {
+    bottom: 20px;
   }
 }
 
