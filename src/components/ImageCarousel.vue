@@ -52,6 +52,30 @@
         <button class="preview-close-btn" @click="closePreview">
           <el-icon><Close /></el-icon>
         </button>
+        
+        <!-- 上一张按钮 -->
+        <button 
+          v-if="images.length > 1" 
+          class="preview-nav-btn preview-prev-btn" 
+          @click.stop="prevImage"
+        >
+          <el-icon><ArrowLeft /></el-icon>
+        </button>
+        
+        <!-- 下一张按钮 -->
+        <button 
+          v-if="images.length > 1" 
+          class="preview-nav-btn preview-next-btn" 
+          @click.stop="nextImage"
+        >
+          <el-icon><ArrowRight /></el-icon>
+        </button>
+        
+        <!-- 图片计数器 -->
+        <div v-if="images.length > 1" class="preview-counter">
+          {{ currentPreviewIndex + 1 }} / {{ images.length }}
+        </div>
+        
         <div class="preview-container">
           <img 
             :src="getImageUrl(currentPreviewIndex)" 
@@ -66,7 +90,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { Picture, Loading, Close } from '@element-plus/icons-vue'
+import { Picture, Loading, Close, ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 
 const props = defineProps({
   // 图片列表，支持字符串数组或对象数组
@@ -196,16 +220,40 @@ const closePreview = () => {
   document.body.style.overflow = ''
 }
 
-// 监听ESC键关闭预览
+// 上一张图片
+const prevImage = () => {
+  if (currentPreviewIndex.value > 0) {
+    currentPreviewIndex.value--
+  } else {
+    // 循环到最后一张
+    currentPreviewIndex.value = props.images.length - 1
+  }
+}
+
+// 下一张图片
+const nextImage = () => {
+  if (currentPreviewIndex.value < props.images.length - 1) {
+    currentPreviewIndex.value++
+  } else {
+    // 循环到第一张
+    currentPreviewIndex.value = 0
+  }
+}
+
+// 监听键盘事件
 watch(previewVisible, (visible) => {
   if (visible) {
-    const handleEsc = (e) => {
+    const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         closePreview()
+      } else if (e.key === 'ArrowLeft') {
+        prevImage()
+      } else if (e.key === 'ArrowRight') {
+        nextImage()
       }
     }
-    window.addEventListener('keydown', handleEsc)
-    return () => window.removeEventListener('keydown', handleEsc)
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
   }
 })
 
@@ -349,6 +397,60 @@ defineExpose({
   transform: scale(1.1);
 }
 
+/* 预览切换按钮样式 */
+.image-preview-overlay .preview-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10000;
+  backdrop-filter: blur(4px);
+}
+
+.image-preview-overlay .preview-nav-btn:hover {
+  background-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.image-preview-overlay .preview-nav-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.image-preview-overlay .preview-prev-btn {
+  left: 20px;
+}
+
+.image-preview-overlay .preview-next-btn {
+  right: 20px;
+}
+
+/* 图片计数器 */
+.image-preview-overlay .preview-counter {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 10000;
+  backdrop-filter: blur(4px);
+}
+
 .image-preview-overlay .preview-container {
   width: 100%;
   height: 100%;
@@ -403,6 +505,34 @@ defineExpose({
     transform: scale(0.95);
   }
   
+  /* 手机端切换按钮优化 */
+  .image-preview-overlay .preview-nav-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .image-preview-overlay .preview-prev-btn {
+    left: 10px;
+  }
+  
+  .image-preview-overlay .preview-next-btn {
+    right: 10px;
+  }
+  
+  .image-preview-overlay .preview-nav-btn:active {
+    background-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-50%) scale(0.95);
+  }
+  
+  /* 手机端计数器优化 */
+  .image-preview-overlay .preview-counter {
+    bottom: 20px;
+    font-size: 13px;
+    padding: 6px 14px;
+  }
+  
   /* 手机端轮播容器优化 */
   :deep(.el-carousel__item) {
     display: block;
@@ -429,6 +559,27 @@ defineExpose({
     width: 36px;
     height: 36px;
     font-size: 18px;
+  }
+  
+  /* 超小屏幕切换按钮优化 */
+  .image-preview-overlay .preview-nav-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 16px;
+  }
+  
+  .image-preview-overlay .preview-prev-btn {
+    left: 8px;
+  }
+  
+  .image-preview-overlay .preview-next-btn {
+    right: 8px;
+  }
+  
+  .image-preview-overlay .preview-counter {
+    bottom: 15px;
+    font-size: 12px;
+    padding: 5px 12px;
   }
 }
 
