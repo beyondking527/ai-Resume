@@ -296,17 +296,18 @@ defineExpose({
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  /* 移除可能导致空白的默认边距 */
-  margin: 0;
-  padding: 0;
+  background-color: v-bind(backgroundColor);
+}
+
+:deep(.el-image) {
+  width: 100%;
+  height: 100%;
 }
 
 :deep(.el-image__inner) {
-  max-width: 100%;
-  max-height: 100%;
-  /* 确保图片没有额外的垂直空白 */
-  vertical-align: top;
-  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: v-bind(imageFit);
 }
 
 /* 全屏预览样式 - 由于使用 Teleport，需要使用全局样式 */
@@ -402,38 +403,16 @@ defineExpose({
     transform: scale(0.95);
   }
   
-  /* 修复手机端轮播图片底部空白问题 */
-  .image-carousel {
-    /* 确保容器没有额外的底部空间 */
-    line-height: 0;
-  }
-  
+  /* 手机端轮播容器优化 */
   :deep(.el-carousel__item) {
-    /* 确保轮播项没有额外的垂直空间 */
-    line-height: 0;
-  }
-  
-  .image-wrapper {
-    /* 确保图片包装器紧凑 */
-    line-height: 0;
-  }
-  
-  .carousel-image {
-    /* 确保图片紧密贴合容器 */
-    line-height: 0;
-    vertical-align: top;
-  }
-  
-  :deep(.el-image) {
-    /* 覆盖 Element Plus 图片组件的默认样式 */
-    line-height: 0;
     display: block;
   }
   
   :deep(.el-image__inner) {
-    /* 确保图片完全填充且无空白 */
-    vertical-align: top;
-    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 100%;
+    object-fit: cover;
   }
 }
 
