@@ -129,18 +129,53 @@ const handleImageChange = (index, image) => {
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  min-height: 500px;
+  height: 500px;
 
   :deep(.image-carousel) {
     border-radius: 16px;
+    height: 100%;
+  }
+
+  :deep(.el-carousel) {
+    height: 100%;
+  }
+
+  :deep(.el-carousel__container) {
+    height: 100% !important;
+  }
+
+  :deep(.el-carousel__item) {
+    height: 100% !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  :deep(.image-wrapper) {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  :deep(.carousel-image) {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block;
+  }
+
+  :deep(.el-image__inner) {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
   }
 
   :deep(.el-carousel__indicators--outside) {
     bottom: -30px;
-  }
-
-  :deep(.el-carousel__container) {
-    height: 500px !important;
   }
 }
 
@@ -239,31 +274,46 @@ const handleImageChange = (index, image) => {
 
   .project-carousel {
     margin-bottom: 20px;
+    height: 220px;
     
     :deep(.image-carousel) {
-      height: 220px !important;
+      height: 100% !important;
       border-radius: 12px;
     }
     
+    :deep(.el-carousel) {
+      height: 100% !important;
+    }
+    
     :deep(.el-carousel__container) {
-      height: 220px !important;
+      height: 100% !important;
     }
     
     :deep(.el-carousel__item) {
-      height: 220px !important;
+      height: 100% !important;
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
     
     :deep(.image-wrapper) {
-      height: 220px !important;
+      width: 100%;
+      height: 100%;
     }
     
     :deep(.carousel-image) {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      display: block;
+    }
+    
+    :deep(.el-image__inner) {
+      width: 100% !important;
+      height: 100% !important;
+      max-width: none !important;
+      max-height: none !important;
     }
   }
 
