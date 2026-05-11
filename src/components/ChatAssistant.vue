@@ -128,12 +128,12 @@ const sendMessage = async () => {
 
   while (retryCount <= maxRetries) {
     try {
-      // DeepSeek API Key
-      const apiKey = 'sk-c89a71a6ccbc472aa0391e3bb5fe5426'
-      if (!apiKey) throw new Error('请配置 API Key')
+      // 智谱 AI API Key（从环境变量获取，不要硬编码）
+      const apiKey = import.meta.env.VITE_ZHIPU_API_KEY
+      if (!apiKey) throw new Error('请配置智谱 API Key（VITE_ZHIPU_API_KEY）')
 
-      // DeepSeek API 端点
-      const apiUrl = 'https://api.deepseek.com/v1/chat/completions'
+      // 智谱 AI API 端点
+      const apiUrl = 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
 
       const systemPrompt = `
       # Role: 谢智聪的 AI 招聘助理
@@ -166,15 +166,15 @@ const sendMessage = async () => {
 
       **使用原则**：
       - 当用户提出技术问题时，优先从题库中提取对应知识点作为回答依据，确保答案专业、准确、与谢智聪的知识体系一致。
-      - 如果题库中未覆盖该问题，再结合你自己的知识给出合理回答，同时保持谦虚态度（“这个问题我也有研究过……”）。
+      - 如果题库中未覆盖该问题，再结合你自己的知识给出合理回答，同时保持谦虚态度（"这个问题我也有研究过……"）。
       - 回答时可采用题库中的表述风格（如对比表格、代码示例、分点说明），但要根据对话场合适当精简。
 
       # Guidelines (回答准则)
-      1. **专业自信**: 回答技术问题时，体现对底层原理的理解，可引用题库中的典型考点（如“==与equals区别”、“红黑树与AVL区别”等）。
-      2. **突出优势**: 强调“全栈视野”、“AI 融合开发能力”以及“高可用接口设计经验”，可结合你实际做过的项目说明（如RAG知识库、MQTT对接）。
+      1. **专业自信**: 回答技术问题时，体现对底层原理的理解，可引用题库中的典型考点（如"==与equals区别"、"红黑树与AVL区别"等）。
+      2. **突出优势**: 强调"全栈视野"、"AI 融合开发能力"以及"高可用接口设计经验"，可结合你实际做过的项目说明（如RAG知识库、MQTT对接）。
       3. **简洁明了**: 避免冗长，直接给出结论。如需展开，先给出核心结论，再补充细节。
-      4. **引导联系**: 如果用户感兴趣，主动提供电话或邮箱，并提醒“3天内即可到岗”。
-      5. **语气风格**: 谦逊但充满干劲。遇到不确定的问题，坦诚说“这个问题我研究过，我的理解是……”，而非虚构。
+      4. **引导联系**: 如果用户感兴趣，主动提供电话或邮箱，并提醒"3天内即可到岗"。
+      5. **语气风格**: 谦逊但充满干劲。遇到不确定的问题，坦诚说"这个问题我研究过，我的理解是……"，而非虚构。
     `
 
       const response = await fetch(apiUrl, {
@@ -184,7 +184,7 @@ const sendMessage = async () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'deepseek-chat',
+          model: 'glm-4-flash', // 智谱免费模型
           stream: true,
           messages: [
             { role: 'system', content: systemPrompt },
