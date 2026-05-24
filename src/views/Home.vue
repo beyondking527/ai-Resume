@@ -83,19 +83,17 @@ import ProjectCard from '@/components/ProjectCard.vue'
 import ChatAssistant from '@/components/ChatAssistant.vue'
 import userAvatar from '@/assets/真人头像.jpg'
 
-// 批量导入 shopadmin 项目图片
 const shopImages = import.meta.glob('@/assets/imagesProject/shopadmin/*.png', { eager: true })
 const shopImgList = Object.values(shopImages).map(module => module.default)
 
-// 批量导入亲喝水售货机项目图片
 const vendingImages = import.meta.glob('@/assets/imagesProject/vending/*.png', { eager: true })
 const vendingImgList = Object.values(vendingImages).map(module => module.default)
 
 const supermarketImages = import.meta.glob('@/assets/imagesProject/supermarket/*.png', { eager: true })
 const supermarketImgList = Object.values(supermarketImages).map(module => module.default)
 
-// 批量导入其他项目图片
-const communityImg1 = new URL('@/assets/imagesProject/社区交友app.png', import.meta.url).href
+const communityImages = import.meta.glob('@/assets/imagesProject/community/*.png', { eager: true })
+const communityImgList = Object.values(communityImages).map(module => module.default)
 
 const isChatVisible = ref(false)
 
@@ -123,36 +121,37 @@ const projects = ref([
     ]
   },
   {
-    title: '亲喝水多端智能售货机管理系统',
-    category: 'IoT 物联网',
+    title: '亲喝水智能售货机管理系统',
+    category: '智慧零售',
     tagType: 'success',
     images: vendingImgList,
-    description: '面向智能零售场景的多端协同物联网管理平台，采用Spring Boot + Vue前后端分离架构。系统包含四大端：平台管理后台（PC）、运维客户端（移动端）、C端用户（售货机小程序）、合作商后台，支持自营、加盟、点位主分成等多种商业模式。提供设备监控、工单管理、在线支付、库存预警等全方位功能，助力传统售货机数字化转型。',
-    technologies: ['Spring Boot', 'Vue.js', '微信小程序', 'Redis', 'MyBatis', 'MyBatis-Plus', 'Druid', 'Element UI', '微信支付', '支付宝支付', '阿里云OSS', '短信服务'],
+    description: '面向智能售货机运营场景的多端协同管理平台，基于若依3.8.7前后端分离架构二次开发。系统包含三大端：运营管理后台（PC端，Vue3+Spring Boot+Spring Security）、运维运营人员App（移动端，短信验证码登录+工单处理）、C端用户小程序（商品浏览+策略定价+在线支付），三端共享MySQL+Redis实现数据实时协同。提供设备全生命周期管理、智能工单流转、货道库存管理、策略定价等核心功能。',
+    technologies: ['Spring Boot', 'Vue 3', '若依框架', 'MyBatis', 'MyBatis-Plus', 'MySQL', 'Redis', 'Druid', 'Spring Security', 'JWT', '阿里云OSS', '阿里云短信', 'Pinia', 'Vite'],
     features: [
-      '多端协同：平台管理后台、运维移动端、售货机小程序、合作商后台四大端完整覆盖',
-      '设备全生命周期管理：设备录入、货道配置、状态监控、远程运维',
-      '智能工单系统：补货、维修、维护工单自动生成与智能派发，移动端接单处理',
-      'C端购物体验：售货机小程序扫码购物，支持微信支付、支付宝支付',
-      '多商业模式支持：自营、加盟、点位主分成模式灵活切换',
-      '点位与区域管理：基于地理位置的设备点位和运营区域划分',
-      '商品与SKU管理：多级商品分类、库存预警、补货策略配置',
-      '文件与消息服务：阿里云OSS图片存储、短信验证码登录',
-      '数据统计分析：运营数据可视化、销售分析、设备收益统计、员工绩效排名'
+      '基于若依3.8.7二开：整合Spring Boot + MyBatis + Spring Security + Druid连接池，支持慢SQL记录与XSS防护',
+      'JWT+Redis双认证方案：后台Token携带UUID、用户信息缓存Redis，支持主动失效与自动续期；App端纯JWT方案(7天有效)，Token自携带用户信息',
+      '多端协同架构：运营后台(Vue3+Spring Security)、运维App(MyBatis-Plus+短信登录+ThreadLocal)、用户小程序(策略定价+在线支付)三端协同工作、共享数据库',
+      '设备全生命周期管理：新增设备自动生成编号与货道(型号行列配置)、货道关联商品、策略分配、状态流转(未投放→运营→撤机)，@Transactional保证设备与货道一致性',
+      '智能工单系统：投放/补货/维修/撤机四类工单，Redis自增生成编号(日期+4位序号)，创建时多重校验(设备状态/重复工单/员工区域)，App端完成工单后联动更新：补货工单→货道库存累加，投放工单→设备状态改为运营',
+      'AOP切面零侵入：框架层提供@DataScope数据权限(动态拼接SQL)、@Log操作日志(异步线程池)、@RateLimiter接口限流，业务代码无需关心横切逻辑',
+      '价格策略：每台售货机可绑定不同价格策略，小程序查询商品时动态计算折扣价格(realPrice=price×discount/100)，后台可灵活调整不同设备的定价',
+      '前端深度封装：Axios请求拦截(Token注入+防重复提交)、Vue Router动态路由(import.meta.glob+addRoute)、v-hasPermi按钮权限指令、字典组件自动映射',
+      '阿里云生态集成：OSS云存储(X-File-Starter统一接口)、短信SDK验证码登录(Redis存储5分钟有效，登录后删除)',
+      '货道库存优化：补货工单完成时一次性查询所有货道，Stream内存匹配累加库存后批量更新，避免循环查询N+1问题'
     ]
   },
   {
     title: '社区交友 App',
     category: '社交应用',
     tagType: 'warning',
-    images: [communityImg1], 
-    description: '基于地理位置的社区社交平台，为用户提供邻里互动、兴趣小组、活动发布等功能。采用微服务架构设计，支持高并发用户访问，注重用户隐私保护与内容安全审核。',
-    technologies: ['SpringBoot', 'MySQL', 'Redis', '阿里云 OSS', 'WebSocket', 'Vue3', 'UniApp'],
+    images: communityImgList,
+    description: '面向兴趣社交的社区交友应用，支持帖子发布与浏览、评论互动、私信聊天、话题分类等功能。基于uni-app跨端开发，WebSocket实现即时通讯，支持Android/iOS双端运行。',
+    technologies: ['UniApp', 'Vue3', 'WebSocket', 'UTS', 'Pinia'],
     features: [
-      'LBS 地理位置服务，精准推荐附近用户与活动',
-      '集成阿里云 OSS 实现图片/视频高效存储与 CDN 加速',
-      'WebSocket 实时消息推送，支持私聊与群聊功能',
-      '敏感词过滤与内容审核机制，保障社区健康环境'
+      'WebSocket即时通讯：断线自动重连(指数退避策略)、会话管理、未读消息角标(TabBar Badge)',
+      '帖子社区功能：发帖/评论/回复、顶踩三态互斥、收藏、关注，全局事件总线同步状态',
+      'Tabs+Swiper联动组件：手势跟随动画(线性插值)、Tab自动居中滚动、懒加载按需请求',
+      '图片上传组件：多图选择(最多9张)、上传进度显示、上传中断(abort)、发布前校验'
     ]
   },
   {
