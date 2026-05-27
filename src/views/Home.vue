@@ -95,6 +95,9 @@ const supermarketImgList = Object.values(supermarketImages).map(module => module
 const communityImages = import.meta.glob('@/assets/imagesProject/community/*.png', { eager: true })
 const communityImgList = Object.values(communityImages).map(module => module.default)
 
+const AIinterviewImages = import.meta.glob('@/assets/imagesProject/AI-interview/*.png', { eager: true })
+const AIinterviewImgList = Object.values(AIinterviewImages).map(module => module.default)
+
 const isChatVisible = ref(false)
 
 const toggleChat = () => {
@@ -118,6 +121,25 @@ const projects = ref([
       'Docker 容器化部署，支持 Docker Compose 编排和 CI/CD 自动化',
       '完善的日志管理和监控告警体系（ELK + Prometheus + Grafana）',
       '支持阿里云 OSS 文件存储，提供图片分类管理和批量上传功能'
+    ]
+  },
+  {
+    "title": "面霸AI",
+    "category": "智能面试模拟助手（云端自部署版）",
+    "tagType": "success",
+    "images": AIinterviewImgList,
+    "description": "基于 RAG 技术、完全运行于 Google Colab 免费 GPU 的智能面试模拟助手。采用 Python + Gradio + Ollama + ChromaDB 技术栈，利用本地 Qwen2.5-7B 对话模型和 BGE-M3 嵌入模型，取代智谱 API，实现零成本、离线、数据安全的面试练习。系统包含双模式（教练模式5段式结构化回答、点评模式10分制评分）、随机出题、多格式知识库导入、流式输出等核心功能。支持 JSON/PDF/DOCX/XLSX/TXT/MD 六种格式，具有文本重叠切分、相似度阈值过滤、对话历史自动截断、中文数据库名哈希映射等优化特性。通过 Gradio share 生成公网链接，可随时随地访问。",
+    "technologies": ["Python 3.12", "Gradio 6.0+", "Ollama (本地大模型运行时)", "Qwen2.5-7B-Instruct (4-bit 量化)","BGE-M3 (嵌入模型)","ChromaDB 0.4+","Google Colab (免费 T4 GPU)","LangChain (RAG 流程集成)","pdfminer.six / python-docx / openpyxl"],
+    "features": [
+      "完全脱离第三方 API，基于 Ollama 本地模型实现零成本、高隐私的面试模拟",
+      "利用 Google Colab 免费 GPU 运行 7B 量化模型，并生成公网 Gradio 链接，随时随地访问",
+      "完整 RAG 流程：文本重叠切分 → BGE 向量化 → ChromaDB 检索 → 相似度阈值过滤 → Qwen 生成",
+      "双模式面试：教练模式输出5段式结构化参考答案，点评模式进行10分制专业评分",
+      "流式输出：对接 Ollama 流式接口，实现逐字打字机效果",
+      "多格式知识库导入：支持 JSON / PDF / DOCX / XLSX / TXT / MD，Markdown 文件自动按标题切分",
+      "双历史对话管理：分离 API 内部历史与界面显示历史，保证上下文完整与界面简洁",
+      "中文数据库名自动哈希映射，突破 ChromaDB 命名限制，UI 友好显示",
+      "对话历史自动截断，保留最近10轮对话，防止超出模型上下文窗口"
     ]
   },
   {

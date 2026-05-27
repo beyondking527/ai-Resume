@@ -1,0 +1,32 @@
+# 项目记忆文件
+
+## 推送和部署流程
+
+### 1. Git 提交到 main 分支
+```bash
+git add -A
+git commit -m "feat: 描述信息"
+git push origin main
+```
+
+### 2. 构建项目
+```bash
+npm run build
+```
+
+### 3. 部署到 GitHub Pages
+```bash
+# ⚠️ 不要使用 npm run deploy，它使用 SSH 协议会报 Permission denied (publickey)
+# 正确方式：使用 HTTPS 协议部署
+npx gh-pages -d dist -r https://github.com/beyondking527/ai-Resume.git -b gh-pages
+```
+
+### 4. 访问地址
+https://beyondking527.github.io/ai-Resume/
+
+### ⚠️ 关键注意点
+- `package.json` 中的 deploy 脚本使用 SSH 地址 `git@github.com:beyondking527/ai-Resume.git`，本机 SSH 密钥未配置会导致部署失败
+- 必须使用 HTTPS 方式部署：`npx gh-pages -d dist -r https://github.com/beyondking527/ai-Resume.git -b gh-pages`
+- 部署前必须先执行 `npm run build` 生成 dist 目录
+- 远程仓库：https://github.com/beyondking527/ai-Resume.git
+- 部署分支：gh-pages
