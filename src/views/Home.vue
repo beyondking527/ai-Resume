@@ -140,7 +140,7 @@ const projects = ref([
     ]
   },
   {
-    title: "帝可得智能售货机管理系统",
+    title: "亲喝水智能售货机管理系统",
     category: "智慧零售",
     tagType: "primary",
     images: vendingImgList,
@@ -158,7 +158,7 @@ const projects = ref([
     ]
   },
   {
-    title: "社区交友 - uni-app x 跨平台应用",
+    title: "陌域社区交友",
     category: "移动社交",
     tagType: "primary",
     images: communityImgList,
