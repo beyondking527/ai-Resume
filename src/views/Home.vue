@@ -106,92 +106,89 @@ const toggleChat = () => {
 
 const projects = ref([
   {
-    title: '商城管理后台',
-    category: '电商管理平台',
-    tagType: 'primary',
+    title: "熊猫商城管理后台",
+    category: "电商管理平台",
+    tagType: "primary",
     images: shopImgList,
-    description: '基于 Spring Boot 2.7 + Vue3 开发的现代化商城管理后台系统，采用前后端分离架构。系统实现了完整的 RBAC 权限管理、商品 SKU/SPU 多维度管理、订单全生命周期管理、二级分销体系等核心业务模块。支持 Docker 容器化部署，集成 Redis 缓存、JWT 认证、阿里云 OSS 等技术，提供完善的监控告警和 CI/CD 自动化部署方案。',
-    technologies: ['Spring Boot 2.7', 'MyBatis-Plus 3.5', 'MySQL 8.0', 'Redis', 'Vue 3', 'Element Plus', 'JWT', 'Docker', 'Nginx'],
+    description: "基于 Spring Boot 2.7 + Vue 3 开发的现代化商城管理后台系统，采用前后端分离架构。系统实现了完整的 RBAC 权限管理、多级商品分类、SPU/SKU 多维度管理、订单状态机、二级分销体系等核心业务模块。集成 JWT 无状态认证、BCrypt 加密、Redis 缓存、OSS 对象存储，并提供接口文档、全局异常处理、统一响应格式等企业级特性。",
+    technologies: ["Spring Boot 2.7", "MyBatis-Plus 3.5", "MySQL 8.0", "Redis", "Vue 3", "Element Plus", "JWT"],
     features: [
-      '完整的 RBAC 权限管理体系，支持动态路由和按钮级权限控制',
-      '商品 SKU/SPU 多维度管理，支持规格笛卡尔积算法自动生成',
-      '订单状态机设计，覆盖待付款、待发货、已发货、已完成、退款等完整流程',
-      '二级分销系统，支持佣金自动计算和推广关系管理',
-      '集成 Redis 缓存机制，优化高频查询性能',
-      'Docker 容器化部署，支持 Docker Compose 编排和 CI/CD 自动化',
-      '完善的日志管理和监控告警体系（ELK + Prometheus + Grafana）',
-      '支持阿里云 OSS 文件存储，提供图片分类管理和批量上传功能'
+      "SKU/SPU商品管理：支持全局规格和商品专属规格，多规格商品通过规格值笛卡尔积算法自动生成SKU组合，并在事务中保证商品与SKU数据的一致性。",
+      "订单状态机：管理从待付款到完成的完整生命周期，在确认收货和同意退款时，通过 @Transactional 事务保证订单状态、库存扣减/回滚、商品销量更新（及SKU销量）的强一致性。",
+      "二级分销体系：通过邀请码绑定上下级关系，在订单完成后按配置比例自动计算一/二级佣金，并利用 Redis 实现分布式锁，确保高并发下佣金计算的准确性和唯一性。",
+      "认证与安全：采用 JWT 无状态认证，结合 BCrypt 加密存储密码。并利用 Redis 记录登录失败次数，实现账号锁定机制，有效防止暴力破解。",
+      "前端深度封装：Axios 请求拦截器统一注入 Token 并处理 401 自动跳转登录；Vue Router 动态路由根据后端菜单权限生成；Element Plus 二次封装与字典组件简化开发。",
+      "数据库设计优化：针对订单、商品、用户等核心业务表设计了合理的索引（如联合索引 idx_status_created），并利用逻辑删除（软删除）保留数据，提升查询效率和可恢复性。"
     ]
   },
   {
-    "title": "面霸AI",
-    "category": "智能面试模拟助手（云端自部署版）",
-    "tagType": "success",
-    "images": AIinterviewImgList,
-    "description": "基于 RAG 技术、完全运行于 Google Colab 免费 GPU 的智能面试模拟助手。采用 Python + Gradio + Ollama + ChromaDB 技术栈，利用本地 Qwen2.5-7B 对话模型和 BGE-M3 嵌入模型，取代智谱 API，实现零成本、离线、数据安全的面试练习。系统包含双模式（教练模式5段式结构化回答、点评模式10分制评分）、随机出题、多格式知识库导入、流式输出等核心功能。支持 JSON/PDF/DOCX/XLSX/TXT/MD 六种格式，具有文本重叠切分、相似度阈值过滤、对话历史自动截断、中文数据库名哈希映射等优化特性。通过 Gradio share 生成公网链接，可随时随地访问。",
-    "technologies": ["Python 3.12", "Gradio 6.0+", "Ollama (本地大模型运行时)", "Qwen2.5-7B-Instruct (4-bit 量化)","BGE-M3 (嵌入模型)","ChromaDB 0.4+","Google Colab (免费 T4 GPU)","LangChain (RAG 流程集成)","pdfminer.six / python-docx / openpyxl"],
-    "features": [
-      "完全脱离第三方 API，基于 Ollama 本地模型实现零成本、高隐私的面试模拟",
-      "利用 Google Colab 免费 GPU 运行 7B 量化模型，并生成公网 Gradio 链接，随时随地访问",
-      "完整 RAG 流程：文本重叠切分 → BGE 向量化 → ChromaDB 检索 → 相似度阈值过滤 → Qwen 生成",
-      "双模式面试：教练模式输出5段式结构化参考答案，点评模式进行10分制专业评分",
-      "流式输出：对接 Ollama 流式接口，实现逐字打字机效果",
-      "多格式知识库导入：支持 JSON / PDF / DOCX / XLSX / TXT / MD，Markdown 文件自动按标题切分",
-      "双历史对话管理：分离 API 内部历史与界面显示历史，保证上下文完整与界面简洁",
-      "中文数据库名自动哈希映射，突破 ChromaDB 命名限制，UI 友好显示",
-      "对话历史自动截断，保留最近10轮对话，防止超出模型上下文窗口"
+    title: "面霸AI - 智能面试模拟助手",
+    category: "AI面试训练平台",
+    tagType: "success",
+    images: AIinterviewImgList,
+    description: "基于 RAG（检索增强生成）技术构建的智能面试训练系统，完全部署于 Google Colab 免费 GPU 环境，使用本地开源模型 Qwen2.5-7B（4-bit 量化）和 BGE-M3 嵌入模型，脱离第三方 API 依赖。用户可上传自定义面试题库（JSON/Markdown/PDF/Word/Excel/TXT），系统通过向量检索召回相关题目，生成结构化参考答案或对用户回答进行点评。支持“面试教练”和“答案点评”两种模式，提供流式对话、对话历史管理、随机出题、数据库管理等功能，并通过 Gradio share=True 生成公网链接，实现零成本云端访问。",
+    technologies: ["Python", "Gradio", "ChromaDB", "Ollama", "Qwen2.5-7B", "BGE-M3", "LangChain", "PDF/Word/Excel解析", "RAG", "Google Colab"],
+    features: [
+        "多格式文档解析与向量化入库：支持 PDF、DOCX、XLSX、TXT、Markdown、JSON 六种格式，自动提取题目与答案，通过 BGE-M3 嵌入模型向量化后存入 ChromaDB 本地向量库。",
+        "双模式对话：面试教练模式下，基于 RAG 检索相似题目生成五段式参考答案；答案点评模式下随机出题，用户回答后 AI 进行 10 分制评分与改进建议。",
+        "相似度阈值过滤与重排：召回后根据余弦距离阈值过滤低相关文档，保留 Top‑K 条作为参考资料，有效提升回答质量。",
+        "对话历史管理：自动截断历史（保留最近 10 轮对话），保证大模型能理解上下文，同时避免超出模型上下文窗口；支持清空对话、随机出题。",
+        "流式输出与 Web 界面：使用 Gradio 构建前后端，对接 Ollama 流式生成 API，实现打字机效果；支持 share=True 生成公网链接，可外网访问。",
+        "零成本云部署：项目完整迁移至 Google Colab，利用免费 Tesla T4 GPU 运行 Qwen2.5-7B 量化模型；通过挂载 Google Drive 实现代码、向量数据库、模型文件的持久化，并提供一键恢复脚本，彻底解决会话丢失问题。",
+        "本地模型替代：使用 Ollama 部署 Qwen2.5-7B（4-bit 量化）对话模型和 BGE-M3 嵌入模型，完全替代智谱 API，保证离线运行、数据隐私、无调用费用。",
+        "集合中文名友好显示：ChromaDB 集合名只支持字母数字下划线，通过 MD5 哈希映射并存储原始中文名到 metadata，UI 下拉菜单显示中文名称。"
     ]
   },
   {
-    title: '亲喝水智能售货机管理系统',
-    category: '智慧零售',
-    tagType: 'success',
+    title: "帝可得智能售货机管理系统",
+    category: "智慧零售",
+    tagType: "primary",
     images: vendingImgList,
-    description: '面向智能售货机运营场景的多端协同管理平台，基于若依3.8.7前后端分离架构二次开发。系统包含三大端：运营管理后台（PC端，Vue3+Spring Boot+Spring Security）、运维运营人员App（移动端，短信验证码登录+工单处理）、C端用户小程序（商品浏览+策略定价+在线支付），三端共享MySQL+Redis实现数据实时协同。提供设备全生命周期管理、智能工单流转、货道库存管理、策略定价等核心功能。',
-    technologies: ['Spring Boot', 'Vue 3', '若依框架', 'MyBatis', 'MyBatis-Plus', 'MySQL', 'Redis', 'Druid', 'Spring Security', 'JWT', '阿里云OSS', '阿里云短信', 'Pinia', 'Vite'],
+    description: "基于若依(RuoYi)框架二次开发的智能售货机运营管理系统，采用多端架构（管理后台Web + 运维人员App + 用户小程序），实现设备全生命周期管理、工单运维、商品销售、点位合作商管理、支付集成等完整业务。后端使用 Spring Boot + MyBatis + Redis + JWT，前端使用 Vue 3 + Element Plus，App端和小程序端独立部署，共享数据库。",
+    technologies: ["Spring Boot", "MyBatis", "MySQL", "Redis", "JWT", "Spring Security", "PageHelper", "AOP", "Vue 3", "Element Plus", "Vite", "若依框架", "MyBatis-Plus", "Hutool", "ElegentPay", "阿里云OSS"],
     features: [
-      '基于若依3.8.7二开：整合Spring Boot + MyBatis + Spring Security + Druid连接池，支持慢SQL记录与XSS防护',
-      'JWT+Redis双认证方案：后台Token携带UUID、用户信息缓存Redis，支持主动失效与自动续期；App端纯JWT方案(7天有效)，Token自携带用户信息',
-      '多端协同架构：运营后台(Vue3+Spring Security)、运维App(MyBatis-Plus+短信登录+ThreadLocal)、用户小程序(策略定价+在线支付)三端协同工作、共享数据库',
-      '设备全生命周期管理：新增设备自动生成编号与货道(型号行列配置)、货道关联商品、策略分配、状态流转(未投放→运营→撤机)，@Transactional保证设备与货道一致性',
-      '智能工单系统：投放/补货/维修/撤机四类工单，Redis自增生成编号(日期+4位序号)，创建时多重校验(设备状态/重复工单/员工区域)，App端完成工单后联动更新：补货工单→货道库存累加，投放工单→设备状态改为运营',
-      'AOP切面零侵入：框架层提供@DataScope数据权限(动态拼接SQL)、@Log操作日志(异步线程池)、@RateLimiter接口限流，业务代码无需关心横切逻辑',
-      '价格策略：每台售货机可绑定不同价格策略，小程序查询商品时动态计算折扣价格(realPrice=price×discount/100)，后台可灵活调整不同设备的定价',
-      '前端深度封装：Axios请求拦截(Token注入+防重复提交)、Vue Router动态路由(import.meta.glob+addRoute)、v-hasPermi按钮权限指令、字典组件自动映射',
-      '阿里云生态集成：OSS云存储(X-File-Starter统一接口)、短信SDK验证码登录(Redis存储5分钟有效，登录后删除)',
-      '货道库存优化：补货工单完成时一次性查询所有货道，Stream内存匹配累加库存后批量更新，避免循环查询N+1问题'
+        "多端协同架构：管理后台、运维App、用户小程序三端独立后端服务，共用 MySQL + Redis，设备状态、工单数据实时同步。",
+        "设备全生命周期管理：设备从创建设型号、绑定点位、投放、运营、补货、维修到撤机，全流程工单驱动，状态机自动流转。",
+        "工单状态机与自动业务操作：投放/撤机工单完成后自动更新设备状态；补货工单完成后自动增加对应货道库存。",
+        "RBAC权限模型 + 数据权限：用户→角色→菜单/按钮，结合 @DataScope AOP 实现部门级数据隔离。",
+        "若依框架特性集成：@Log 操作日志、@RepeatSubmit 防重复提交、@RateLimiter 接口限流（Redis+Lua）、XSS防护、代码生成。",
+        "App端轻量认证：使用 MyBatis-Plus + Hutool + 自定义 JWT，独立于管理后台，面向运维人员。",
+        "小程序端支付集成：集成 ElegentPay SDK，支持微信支付，订单与设备出货联动。",
+        "文件存储统一抽象：使用 x-file-storage 组件，支持阿里云OSS，配置灵活。"
     ]
   },
   {
-    title: '社区交友 App',
-    category: '社交应用',
-    tagType: 'warning',
+    title: "社区交友 - uni-app x 跨平台应用",
+    category: "移动社交",
+    tagType: "primary",
     images: communityImgList,
-    description: '面向兴趣社交的社区交友应用，支持帖子发布与浏览、评论互动、私信聊天、话题分类等功能。基于uni-app跨端开发，WebSocket实现即时通讯，支持Android/iOS双端运行。',
-    technologies: ['UniApp', 'Vue3', 'WebSocket', 'UTS', 'Pinia'],
+    description: "基于 uni-app x 框架开发的社区交友移动应用，使用 UTS（Uni TypeScript）强类型语言，编译为原生应用（Android Kotlin / iOS Swift），实现原生级渲染性能。应用包含帖子发布/浏览、评论互动、即时聊天（WebSocket）、用户关注、话题分类等核心社交功能，采用事件驱动架构和全局状态管理，支持多端（App）部署。",
+    technologies: ["uni-app x", "UTS", "Vue 3", "WebSocket", "uni.request", "原生渲染"],
     features: [
-      'WebSocket即时通讯：断线自动重连(指数退避策略)、会话管理、未读消息角标(TabBar Badge)',
-      '帖子社区功能：发帖/评论/回复、顶踩三态互斥、收藏、关注，全局事件总线同步状态',
-      'Tabs+Swiper联动组件：手势跟随动画(线性插值)、Tab自动居中滚动、懒加载按需请求',
-      '图片上传组件：多图选择(最多9张)、上传进度显示、上传中断(abort)、发布前校验'
+        "强类型系统：通过 type.uts 定义 20+ 数据模型，涵盖帖子、评论、用户、会话、消息等所有业务实体，API 响应使用泛型 Result<T> 实现类型安全。",
+        "WebSocket 即时通讯：实现完整生命周期管理（连接、自动重连、心跳检测、消息分发），支持单聊、未读角标、消息已读标记。",
+        "事件驱动架构：使用 uni.$on/emit/off 实现组件间松耦合通信，包括帖子变更、评论成功、会话更新、未读数变化等 10+ 全局事件。",
+        "动态 Tab 与懒加载：首页根据 API 动态加载帖子分类，每个分类对应一个 tabs-swiper 项，首次可见时才触发数据加载，减少首屏请求。",
+        "顶踩三态切换：支持顶/踩/取消三种状态，通过全局事件实时同步列表页和详情页的数据状态。",
+        "长列表统一封装：long-list-page 组件封装帖子、话题、用户、评论四种列表类型的分页加载与实时刷新逻辑。",
+        "登录拦截与状态管理：store/user.uts 集中管理用户登录状态、信息缓存、Token 持久化，提供 AuthNavigateTo / AuthAction 统一登录拦截。"
     ]
   },
   {
-    title: '超市订单管理系统',
-    category: '企业管理系统',
-    tagType: 'primary',
-    images: supermarketImgList, 
-    description: '基于 Spring Boot 3 + Vue3 的前后端分离企业级管理系统，聚焦供应链核心业务流程。采用 RBAC 权限模型实现细粒度访问控制，集成 JWT 无状态认证、Redis 缓存优化、AOP 统一日志等技术栈，独立完成从数据库设计到接口开发的全流程实现。系统支持用户管理、供应商管理、账单管理等模块，具备完整的 CRUD 操作、分页查询、数据校验及异常处理机制。',
-    technologies: ['Spring Boot 3.1','MyBatis','MySQL 8.0','Redis','JWT','Vue 3','Element Plus','Vite'],
+    title: "超市账单管理系统",
+    category: "企业管理后台",
+    tagType: "primary",
+    images: supermarketImgList,
+    description: "基于 Spring Boot 3 + Vue 3 前后端分离架构的超市账单（订单）管理系统，实现用户管理、供应商管理、账单管理、权限菜单管理等核心业务功能。系统采用 UUID Token + Redis 认证方案，支持 RBAC 权限模型，具备登录/登出/忘记密码/修改密码等完整安全功能，通过 AOP + 策略模式实现差异化日志记录。",
+    technologies: ["Spring Boot 3", "MyBatis", "MySQL", "Redis", "JWT (jjwt)", "BCrypt", "PageHelper", "AOP", "Vue 3", "Element Plus", "Axios", "Vite"],
     features: [
-      '设计并实现 RBAC 权限模型，支持菜单级与按钮级动态权限控制，通过自定义注解 + AOP 实现权限拦截',
-      '基于 JWT Token 实现无状态认证机制，结合拦截器完成登录校验与 Token 刷新，保障会话安全',
-      '引入 Redis 缓存验证码与热点数据，降低数据库压力，验证码有效期 5 分钟且单次有效',
-      '使用 PageHelper 分页插件实现高效分页查询，支持多条件动态筛选与排序，优化大数据量场景性能',
-      '采用 BCrypt 强哈希算法加密用户密码，防止明文存储风险，提升数据安全性',
-      '通过 AOP 切面编程实现统一操作日志记录与声明式事务管理，确保业务数据一致性',
-      '遵循 RESTful API 设计规范，统一响应格式与异常处理，提供清晰的接口文档',
-      '前端采用 Vue3 Composition API + Element Plus 组件库，实现响应式布局与表单验证'
+        "UUID Token + Redis 认证方案：Token 以 UUID 形式存储于 Redis，支持主动失效和自动续期，相比自包含 JWT 可随时踢人下线。",
+        "RBAC 权限模型：基于角色控制权限，权限表支持树形结构（菜单/按钮/接口），通过 role_permission 关联表灵活分配。",
+        "策略模式 AOP 日志切面：根据 Service 层方法操作的不同实体（用户/账单/供应商），自动选择对应日志策略，记录操作前后及异常信息。",
+        "统一错误码体系：错误码分段管理（通用/认证/用户/业务），前端可根据错误码差异化处理，如 2002/2003 自动跳转登录。",
+        "分页双方案：支持 PageHelper 插件分页和手写 PageSupport 分页两种方式，适应不同场景。",
+        "前端 Axios 封装：请求拦截器自动附加 JWT Token，响应拦截器统一处理错误码，401/2002/2003 自动清除 Token 并跳转登录。",
+        "Vue Router 导航守卫：基于路由元信息（requiresAuth / public）控制页面访问权限，未登录自动重定向并携带 redirect 参数。"
     ]
   }
 ])
