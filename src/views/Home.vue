@@ -98,6 +98,9 @@ const communityImgList = Object.values(communityImages).map(module => module.def
 const AIinterviewImages = import.meta.glob('@/assets/imagesProject/AI-interview/*.png', { eager: true })
 const AIinterviewImgList = Object.values(AIinterviewImages).map(module => module.default)
 
+const CCMobilityImages = import.meta.glob('@/assets/imagesProject/CCMobility/*.png', { eager: true })
+const CCMobilityImgList = Object.values(CCMobilityImages).map(module => module.default)
+
 const isChatVisible = ref(false)
 
 const toggleChat = () => {
@@ -123,7 +126,7 @@ const projects = ref([
   },
   {
     title: "面霸AI - 智能面试模拟助手",
-    category: "AI面试训练平台",
+    category: "AI 面试训练平台",
     tagType: "success",
     images: AIinterviewImgList,
     description: "基于 RAG（检索增强生成）技术构建的智能面试训练系统，完全部署于 Google Colab 免费 GPU 环境，使用本地开源模型 Qwen2.5-7B（4-bit 量化）和 BGE-M3 嵌入模型，脱离第三方 API 依赖。用户可上传自定义面试题库（JSON/Markdown/PDF/Word/Excel/TXT），系统通过向量检索召回相关题目，生成结构化参考答案或对用户回答进行点评。支持“面试教练”和“答案点评”两种模式，提供流式对话、对话历史管理、随机出题、数据库管理等功能，并通过 Gradio share=True 生成公网链接，实现零成本云端访问。",
@@ -137,6 +140,23 @@ const projects = ref([
         "零成本云部署：项目完整迁移至 Google Colab，利用免费 Tesla T4 GPU 运行 Qwen2.5-7B 量化模型；通过挂载 Google Drive 实现代码、向量数据库、模型文件的持久化，并提供一键恢复脚本，彻底解决会话丢失问题。",
         "本地模型替代：使用 Ollama 部署 Qwen2.5-7B（4-bit 量化）对话模型和 BGE-M3 嵌入模型，完全替代智谱 API，保证离线运行、数据隐私、无调用费用。",
         "集合中文名友好显示：ChromaDB 集合名只支持字母数字下划线，通过 MD5 哈希映射并存储原始中文名到 metadata，UI 下拉菜单显示中文名称。"
+    ]
+  },
+  {
+    title: "行云 - 多模态出行管家",
+    category: "AI 出行规划平台",
+    tagType: "success",
+    images: CCMobilityImgList,
+    description: "基于 LangChain + 智谱 AI 构建的智能出行规划系统，用户使用自然语言描述需求（如“我现在在深圳，明天想去海南”），系统自动解析地名、日期，调用高德地图路线规划、OpenWeatherMap 天气查询、公共交通/航班/火车/长途汽车预估等多个工具，基于实际距离智能推荐步行、骑行、驾车、公交、火车或飞机等出行方案，并生成日历文件（.ics）供用户导入手机日历。完全脱离人工干预，一次性提供完整出行建议，包含天气、路线、多种交通方式对比、日历提醒等一站式服务。",
+    technologies: ["Python 3.10","LangChain","智谱 AI GLM-4-Flash","FastAPI","高德地图 API（地理编码/路线规划/周边搜索）","OpenWeatherMap API","ics 日历库","HTML/CSS/JavaScript","正则表达式与地名解析"],
+    features: [
+        "自然语言理解与智能解析：自动识别出发地、目的地、日期（今天/明天/后天/大后天/YYYY-MM-DD），模糊地名（龙岗区→深圳、四川→成都）自动补全为标准城市名，无需用户手动结构化输入。",
+        "多工具智能编排：集成天气查询、驾车/步行/骑行路线规划、公交/地铁规划、航班/火车/长途汽车预估、附近地点搜索等 9 个工具；系统根据实际行驶距离（调用高德 API 获取真实路线距离）和预设阈值（步行≤5km、骑行≤15km、公交≤50km、火车>100km、飞机>500km）主动推荐所有可行方案，无需用户选择。",
+        "跨城与本地双模式：当输入包含两个城市名时自动进入跨城模式，调用航班/火车/长途汽车等长途工具；仅有一个地点且包含“附近”关键词时进入本地搜索模式，提供周边美食、景点、站点等POI结果。",
+        "强制工具调用策略：当 LLM 未按预期调用必要工具时，系统根据已解析的起终点和距离主动补充调用所有相关工具（天气、路线、交通），保证输出完整可靠，避免 AI“偷懒”。",
+        "日历事件生成与导出：自动根据用户提供的日期和预估行程时间生成 .ics 日历文件，前端提供下载按钮，用户可一键导入手机/电脑日历，实现出行提醒。",
+        "Web 全栈应用：FastAPI 提供 REST API，前端采用现代深色风格界面，实时显示工具调用链（参数、结果），支持折叠/展开，最终答案由 LLM 综合所有工具结果生成，可读性强。",
+        "安全与健壮性：下载日历文件接口做路径校验，防止目录遍历攻击；工具调用均设置超时与异常捕获；地名解析通过位置占用区间避免重复匹配（如“深圳龙岗”只匹配“龙岗”）。"
     ]
   },
   {
